@@ -12,4 +12,9 @@
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
+
+    <logger name="mylogger" level="DEBUG"/>
+    <logger name="itauERP" level="TRACE"/>
+    <logger name="bacenPix" level="TRACE"/>
+    <logger name="bacenPix" level="DEBUG"/>
 </configuration>

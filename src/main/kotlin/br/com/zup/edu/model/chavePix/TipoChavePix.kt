@@ -1,5 +1,7 @@
 package br.com.zup.edu.model.chavePix
 
+import br.com.zup.edu.external.bacenPix.TipoChaveBacen
+
 
 enum class TipoChavePix {
     CPF {
@@ -22,7 +24,12 @@ enum class TipoChavePix {
         override fun valida(valor: String?): Boolean {
             return valor?.isBlank() ?: true
         }
+
+        override fun toTipoChaveBacen(): TipoChaveBacen {
+            return TipoChaveBacen.RANDOM
+        }
     };
 
     abstract fun valida(valor: String?): Boolean
+    open fun toTipoChaveBacen(): TipoChaveBacen { return TipoChaveBacen.valueOf(this.toString()) }
 }

@@ -2,6 +2,8 @@ micronaut:
   application:
     name: keyManager
   http:
+    client:
+      logger-name: mylogger
     services:
       itauERP:
         logger-name: itauERP

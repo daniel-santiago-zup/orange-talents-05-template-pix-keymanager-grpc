@@ -43,6 +43,10 @@ class ErrorAroundHandlerInterceptor() : MethodInterceptor<Any, Any> {
                     .withDescription(e.message)
                     .asRuntimeException()
 
+                is ForbiddenException -> Status.PERMISSION_DENIED
+                    .withDescription(e.message)
+                    .asRuntimeException()
+
                 else -> {
                     println(e)
                     Status.UNKNOWN

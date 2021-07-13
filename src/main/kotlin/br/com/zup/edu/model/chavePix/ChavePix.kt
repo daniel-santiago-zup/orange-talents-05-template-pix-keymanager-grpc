@@ -26,15 +26,10 @@ data class ChavePix(
 
     var criadaEm: LocalDateTime = LocalDateTime.now()
 
-    init {
-        if (tipoChave == TipoChavePix.RANDOM_KEY) {
-            valorChave = UUID.randomUUID().toString()
-        }
-    }
-
     @Embeddable
     data class ContaAssociada(
         @field:NotBlank val instituicao: String,
+        @field:NotBlank val ispb: String,
         @field:NotBlank val nome: String,
         @field:NotBlank @field:CPF val cpf: String,
         @field:NotBlank val agencia: String,

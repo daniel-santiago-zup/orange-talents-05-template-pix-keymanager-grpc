@@ -1,15 +1,20 @@
 package br.com.zup.edu.model.chavePix
 
 import br.com.zup.edu.annotations.ErrorAroundHandler
+import br.com.zup.edu.annotations.ForbiddenException
 import br.com.zup.edu.annotations.NotFoundException
+import br.com.zup.edu.annotations.NotUniqueValueException
+import br.com.zup.edu.external.bacenPix.BacenPixClient
+import br.com.zup.edu.external.bacenPix.BacenPixCreateRequest
+import br.com.zup.edu.external.bacenPix.BacenPixDeleteRequest
 import br.com.zup.edu.external.itauERP.ItauERPClient
 import br.com.zup.edu.proto.ChavePixRequest
 import br.com.zup.edu.proto.ChavePixResponse
 import br.com.zup.edu.proto.DeletaChavePixRequest
 import br.com.zup.edu.proto.DeletaChavePixResponse
 import br.com.zup.edu.proto.KeyManagerServiceGrpc.KeyManagerServiceImplBase
-import io.grpc.Status
 import io.grpc.stub.StreamObserver
+import io.micronaut.http.HttpStatus
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +27,7 @@ import javax.validation.Validator
 class ChavePixEndpoint(
     @Inject val chavePixRepository: ChavePixRepository,
     @Inject val itauClient: ItauERPClient,
+    @Inject val bacenPixClient: BacenPixClient,
     @Inject val validator: Validator
 ) : KeyManagerServiceImplBase() {
 
@@ -33,7 +39,35 @@ class ChavePixEndpoint(
         val contaResponse = itauClient.obtemContaCliente(chavePixDTO.idCliente, chavePixDTO.tipoConta.toString()).body()
             ?: throw NotFoundException()
 
-        val chavePix = chavePixRepository.save(chavePixDTO.converte(contaResponse))
+        val bacenPixRequest = BacenPixCreateRequest(
+            keyType = chavePixDTO.tipoChave.toTipoChaveBacen(),
+            key = chavePixDTO.valorChave,
+            bankAccount = BacenPixCreateRequest.BankAccount(
+                participant = contaResponse.instituicao.ispb,
+                branch = contaResponse.agencia,
+                accountNumber = contaResponse.numero,
+                accounType = contaResponse.tipo.paraBacenPixAccount()
+            ),
+            owner = BacenPixCreateRequest.Owner(
+                type = BacenPixCreateRequest.Owner.OwnerType.NATURAL_PERSON,
+                name = contaResponse.titular.nome,
+                taxIdNumber = contaResponse.titular.cpf
+            )
+        )
+
+        val bacenPixResponse = bacenPixClient.registraChavePix(bacenPixRequest)
+
+        if (bacenPixResponse.status == HttpStatus.UNPROCESSABLE_ENTITY) throw NotUniqueValueException("Chave ja esta registrada no Banco Central")
+
+        var chavePix: ChavePix
+
+        if (chavePixDTO.tipoChave == TipoChavePix.RANDOM_KEY) {
+            chavePix = chavePixDTO.converte(contaResponse, bacenPixResponse.body().key)
+        } else {
+            chavePix = chavePixDTO.converte(contaResponse)
+        }
+
+        chavePix = chavePixRepository.save(chavePix)
 
         responseObserver.onNext(
             ChavePixResponse.newBuilder()
@@ -53,6 +87,20 @@ class ChavePixEndpoint(
         val pixUuid = UUID.fromString(request.pixId)
 
         if (!chavePixRepository.existsById(pixUuid)) throw NotFoundException()
+
+        val chavePix = chavePixRepository.findById(pixUuid).get()
+
+        val bacenDeleteRequest = BacenPixDeleteRequest (
+            key = chavePix.valorChave,
+            participant = chavePix.conta.ispb
+        )
+
+        val bacenDeleteReponse = bacenPixClient.deletaChavePix(chavePix.valorChave, bacenDeleteRequest)
+
+        when (bacenDeleteReponse.status) {
+            HttpStatus.NOT_FOUND -> throw NotFoundException()
+            HttpStatus.FORBIDDEN -> throw ForbiddenException()
+        }
 
         chavePixRepository.deleteById(pixUuid)
 

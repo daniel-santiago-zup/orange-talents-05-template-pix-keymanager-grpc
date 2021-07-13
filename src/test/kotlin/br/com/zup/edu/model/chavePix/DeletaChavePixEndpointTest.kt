@@ -35,6 +35,7 @@ internal class DeletaChavePixEndpointTest(
             valorChave = "06628726061",
             conta = ChavePix.ContaAssociada(
                 instituicao = "ITAÚ UNIBANCO S.A.",
+                ispb = "60701190",
                 nome = "Alberto Tavares",
                 cpf = "06628726061",
                 agencia = "0001",

@@ -1,7 +1,9 @@
 package br.com.zup.edu.external.itauERP
 
+import br.com.zup.edu.model.chavePix.TipoConta
+
 data class ItauERPContaResponse(
-    val tipo: String,
+    val tipo: TipoConta,
     val instituicao: Instituicao,
     val agencia: String,
     val numero: String,
