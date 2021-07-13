@@ -1,12 +1,22 @@
 micronaut:
   application:
     name: keyManager
+  http:
+    services:
+      itauERP:
+        logger-name: itauERP
+        urls:
+          - http://localhost:9091
+      bacenPix:
+        logger-name: bacenPix
+        urls:
+          - http://localhost:8082
 datasources:
   default:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/keyManagerPix
     driverClassName: org.postgresql.Driver
     username: postgres
-    password: ''
-    schema-generate: CREATE_DROP
+    password: '123456'
     dialect: POSTGRES
+    schema-generate: CREATE_DROP
 jpa.default.properties.hibernate.hbm2ddl.auto: update
