@@ -1,6 +1,6 @@
 package br.com.zup.edu.annotations
 
-import br.com.zup.edu.model.chavePix.ChavePixDTO
+import br.com.zup.edu.model.chavePix.ChavePixCreateDTO
 import io.micronaut.core.annotation.AnnotationValue
 import io.micronaut.validation.validator.constraints.ConstraintValidator
 import javax.inject.Singleton
@@ -15,10 +15,10 @@ annotation class ValidPixKey(
 )
 
 @Singleton
-class ValidPixKeyValidator(): ConstraintValidator<ValidPixKey, ChavePixDTO> {
+class ValidPixKeyValidator(): ConstraintValidator<ValidPixKey, ChavePixCreateDTO> {
 
     override fun isValid(
-        value: ChavePixDTO,
+        value: ChavePixCreateDTO,
         annotationMetadata: AnnotationValue<ValidPixKey>,
         context: io.micronaut.validation.validator.constraints.ConstraintValidatorContext
     ): Boolean {

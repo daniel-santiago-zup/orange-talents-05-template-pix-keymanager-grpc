@@ -1,5 +1,8 @@
 package br.com.zup.edu.annotations
 
+import br.com.zup.edu.exceptions.ForbiddenException
+import br.com.zup.edu.exceptions.NotFoundException
+import br.com.zup.edu.exceptions.NotUniqueValueException
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.micronaut.aop.Around

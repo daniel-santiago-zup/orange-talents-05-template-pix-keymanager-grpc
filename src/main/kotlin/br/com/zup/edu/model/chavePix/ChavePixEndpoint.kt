@@ -1,18 +1,17 @@
 package br.com.zup.edu.model.chavePix
 
 import br.com.zup.edu.annotations.ErrorAroundHandler
-import br.com.zup.edu.annotations.ForbiddenException
-import br.com.zup.edu.annotations.NotFoundException
-import br.com.zup.edu.annotations.NotUniqueValueException
+import br.com.zup.edu.exceptions.ForbiddenException
+import br.com.zup.edu.exceptions.NotFoundException
+import br.com.zup.edu.exceptions.NotUniqueValueException
 import br.com.zup.edu.external.bacenPix.*
 import br.com.zup.edu.external.itauERP.ItauERPClient
-import br.com.zup.edu.proto.ChavePixRequest
-import br.com.zup.edu.proto.ChavePixResponse
-import br.com.zup.edu.proto.DeletaChavePixRequest
-import br.com.zup.edu.proto.DeletaChavePixResponse
+import br.com.zup.edu.proto.*
 import br.com.zup.edu.proto.KeyManagerServiceGrpc.KeyManagerServiceImplBase
 import io.grpc.stub.StreamObserver
 import io.micronaut.http.HttpStatus
+import java.lang.IllegalArgumentException
+import java.lang.IllegalStateException
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -86,7 +85,7 @@ class ChavePixEndpoint(
 
         val chavePix = chavePixRepository.findById(pixUuid).get()
 
-        val bacenDeleteRequest = BacenPixDeleteRequest (
+        val bacenDeleteRequest = BacenPixDeleteRequest(
             key = chavePix.valorChave,
             participant = chavePix.conta.ispb
         )
@@ -105,10 +104,79 @@ class ChavePixEndpoint(
 
     }
 
+    override fun detalhaChaveExternal(
+        request: DetalhaChavePixExternalRequest,
+        responseObserver: StreamObserver<DetalhaChavePixExternalResponse>
+    ) {
+
+        val chavePixDetailDTO = request.converte(validator)
+
+        val chavePix = chavePixRepository.findById(UUID.fromString(chavePixDetailDTO.pixId))
+            .orElseThrow() {
+                NotFoundException("Chave pix fornecida não encontrada localmente")
+            }
+
+        if (chavePixDetailDTO.idCliente != chavePix.idCliente) throw ForbiddenException("O pixId fornecido não pertence ao cliente")
+        if (bacenPixClient.detalhaChavePix(chavePix.valorChave).status == HttpStatus.NOT_FOUND) throw NotFoundException("Chave pix fornecida não encontrada no Banco Central")
+
+        responseObserver.onNext(DetalhaChavePixExternalResponse.newBuilder()
+            .setIdCliente(chavePix.idCliente)
+            .setPixId(chavePix.id.toString())
+            .setTipoChave(chavePix.tipoChave.toTipoChavePixProtobuff())
+            .setValorChave(chavePix.valorChave)
+            .setTitular(DetalhaChavePixExternalResponse.Titular.newBuilder()
+                .setNome(chavePix.conta.nome)
+                .setCpf(chavePix.conta.cpf)
+                .build())
+            .setConta(DetalhaChavePixExternalResponse.Conta.newBuilder()
+                .setInstituicao(chavePix.conta.instituicao)
+                .setAgencia(chavePix.conta.agencia)
+                .setNumero(chavePix.conta.numeroDaConta)
+                .setTipo(chavePix.tipoConta.toTipoContaProtobuff())
+                .build())
+            .setCriadoEm(chavePix.criadaEm.toString())
+            .build())
+
+        responseObserver.onCompleted()
+    }
+
+    override fun detalhaChaveInternal (
+        request: DetalhaChaveInternalRequest,
+        responseObserver: StreamObserver<DetalhaChaveInternalResponse>
+    ) {
+        if (request.chavePix.isNullOrBlank()) throw IllegalArgumentException("Chave pix deve ser preenchida")
+
+        val bacenChavePixResponse =  bacenPixClient.detalhaChavePix(request.chavePix)
+
+        if (bacenChavePixResponse.status == HttpStatus.NOT_FOUND) throw NotFoundException("Chave pix não encontrada no Banco Central")
+
+        val chavePix = bacenChavePixResponse.body() ?: throw IllegalStateException("Corpo da resposta do Banco Central vazio")
+
+        responseObserver.onNext(
+            DetalhaChaveInternalResponse.newBuilder()
+            .setTipoChave(chavePix.keyType.toTipoChaveProtobuff())
+            .setValorChave(chavePix.key)
+            .setTitular(DetalhaChaveInternalResponse.Titular.newBuilder()
+                .setNome(chavePix.owner.name)
+                .setCpf(chavePix.owner.taxIdNumber)
+                .build())
+            .setConta(DetalhaChaveInternalResponse.Conta.newBuilder()
+                .setInstituicao(chavePix.bankAccount.participant)
+                .setAgencia(chavePix.bankAccount.branch)
+                .setNumero(chavePix.bankAccount.accountNumber)
+                .setTipo(chavePix.bankAccount.accounType.toTipoContaProtobuff())
+                .build())
+            .setCriadoEm(chavePix.createdAt.toString())
+            .build())
+
+        responseObserver.onCompleted()
+
+    }
+
 }
 
-fun ChavePixRequest.converte(validador: Validator): ChavePixDTO {
-    val chavePix = ChavePixDTO(
+fun ChavePixRequest.converte(validador: Validator): ChavePixCreateDTO {
+    val chavePix = ChavePixCreateDTO(
         idCliente = idCliente,
         tipoChave = TipoChavePix.valueOf(tipoChave.name),
         valorChave = valorChave,
@@ -122,4 +190,20 @@ fun ChavePixRequest.converte(validador: Validator): ChavePixDTO {
     }
 
     return chavePix
+}
+
+fun DetalhaChavePixExternalRequest.converte(validador: Validator): ChavePixDetailDTO {
+    val chavePixDetailDTO = ChavePixDetailDTO(
+        idCliente = idCliente,
+        pixId = pixId
+    )
+
+    val erros = validador.validate(chavePixDetailDTO)
+
+    if (erros.isNotEmpty()) {
+        throw ConstraintViolationException(erros)
+    }
+
+    return chavePixDetailDTO
+
 }

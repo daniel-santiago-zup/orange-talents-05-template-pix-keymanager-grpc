@@ -8,6 +8,8 @@ option objc_class_prefix = "HLW";
 package br.com.zup.edu;
 
 service KeyManagerService {
+  rpc detalhaChaveExternal (DetalhaChavePixExternalRequest) returns (DetalhaChavePixExternalResponse) {};
+  rpc detalhaChaveInternal (DetalhaChaveInternalRequest) returns (DetalhaChaveInternalResponse) {};
   rpc registraChave (ChavePixRequest) returns (ChavePixResponse) {};
   rpc deletaChave (DeletaChavePixRequest) returns (DeletaChavePixResponse);
 }
@@ -34,11 +36,62 @@ message ChavePixRequest {
 }
 
 message ChavePixResponse {
-  string PixId = 1;
+  string pixId = 1;
 }
 
 message DeletaChavePixRequest {
-  string PixId = 1;
+  string pixId = 1;
 }
 
 message DeletaChavePixResponse {}
+
+message DetalhaChavePixExternalRequest {
+  string idCliente = 1;
+  string pixId = 2;
+}
+
+message DetalhaChavePixExternalResponse {
+  string pixId = 1;
+  string idCliente = 2;
+  TipoChavePix tipoChave = 3;
+  string valorChave = 4;
+  Titular titular = 5;
+  Conta conta = 6;
+  string criadoEm = 7;
+
+  message Titular {
+    string nome = 1;
+    string cpf = 2;
+  }
+
+  message Conta {
+    string instituicao = 1;
+    string agencia = 2;
+    string numero = 3;
+    TipoConta tipo = 4;
+  }
+}
+
+message DetalhaChaveInternalRequest {
+  string chavePix = 1;
+}
+
+message DetalhaChaveInternalResponse {
+  TipoChavePix tipoChave = 3;
+  string valorChave = 4;
+  Titular titular = 5;
+  Conta conta = 6;
+  string criadoEm = 7;
+
+  message Titular {
+    string nome = 1;
+    string cpf = 2;
+  }
+
+  message Conta {
+    string instituicao = 1;
+    string agencia = 2;
+    string numero = 3;
+    TipoConta tipo = 4;
+  }
+}

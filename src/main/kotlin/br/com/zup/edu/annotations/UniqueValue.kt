@@ -1,5 +1,6 @@
 package br.com.zup.edu.annotations
 
+import br.com.zup.edu.exceptions.NotUniqueValueException
 import io.micronaut.core.annotation.AnnotationValue
 import io.micronaut.validation.validator.constraints.ConstraintValidator
 import io.micronaut.validation.validator.constraints.ConstraintValidatorContext

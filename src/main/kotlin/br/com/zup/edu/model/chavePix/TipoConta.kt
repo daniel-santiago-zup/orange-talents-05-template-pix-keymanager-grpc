@@ -1,6 +1,7 @@
 package br.com.zup.edu.model.chavePix
 
 import br.com.zup.edu.external.bacenPix.BankAccount
+import br.com.zup.edu.proto.TipoConta
 
 enum class TipoConta {
     CONTA_CORRENTE {
@@ -15,4 +16,5 @@ enum class TipoConta {
     };
 
     abstract fun paraBacenPixAccount(): BankAccount.AccountType
+    open fun toTipoContaProtobuff(): TipoConta = TipoConta.valueOf(this.toString())
 }

@@ -11,7 +11,7 @@ import javax.validation.constraints.Size
 
 @Introspected
 @ValidPixKey
-data class ChavePixDTO(
+data class ChavePixCreateDTO(
     @field:NotBlank @field:ValidUUID val idCliente: String,
     @field:NotNull val tipoConta: TipoConta,
     @field:NotNull val tipoChave: TipoChavePix,

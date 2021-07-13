@@ -1,5 +1,6 @@
 package br.com.zup.edu.external.bacenPix
 
+import br.com.zup.edu.proto.TipoConta
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 
 data class BankAccount(
@@ -9,7 +10,17 @@ data class BankAccount(
     @field:JacksonXmlProperty(localName = "accountType") val accounType: AccountType,
 ) {
     enum class AccountType {
-        CACC,
-        SVGS
+        CACC {
+            override fun toTipoContaProtobuff(): TipoConta {
+                return TipoConta.CONTA_CORRENTE
+            }
+        },
+        SVGS {
+            override fun toTipoContaProtobuff(): TipoConta {
+                return TipoConta.CONTA_POUPANCA
+            }
+        };
+
+        abstract fun toTipoContaProtobuff(): TipoConta
     }
 }

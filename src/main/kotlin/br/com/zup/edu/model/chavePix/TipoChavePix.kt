@@ -1,6 +1,7 @@
 package br.com.zup.edu.model.chavePix
 
 import br.com.zup.edu.external.bacenPix.TipoChaveBacen
+import br.com.zup.edu.proto.TipoChavePix
 
 
 enum class TipoChavePix {
@@ -31,5 +32,6 @@ enum class TipoChavePix {
     };
 
     abstract fun valida(valor: String?): Boolean
-    open fun toTipoChaveBacen(): TipoChaveBacen { return TipoChaveBacen.valueOf(this.toString()) }
+    open fun toTipoChaveBacen(): TipoChaveBacen { return TipoChaveBacen.valueOf(this.toString())}
+    open fun toTipoChavePixProtobuff(): TipoChavePix { return TipoChavePix.valueOf(this.toString()) }
 }
