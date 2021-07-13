@@ -4,9 +4,7 @@ import br.com.zup.edu.annotations.ErrorAroundHandler
 import br.com.zup.edu.annotations.ForbiddenException
 import br.com.zup.edu.annotations.NotFoundException
 import br.com.zup.edu.annotations.NotUniqueValueException
-import br.com.zup.edu.external.bacenPix.BacenPixClient
-import br.com.zup.edu.external.bacenPix.BacenPixCreateRequest
-import br.com.zup.edu.external.bacenPix.BacenPixDeleteRequest
+import br.com.zup.edu.external.bacenPix.*
 import br.com.zup.edu.external.itauERP.ItauERPClient
 import br.com.zup.edu.proto.ChavePixRequest
 import br.com.zup.edu.proto.ChavePixResponse
@@ -42,14 +40,14 @@ class ChavePixEndpoint(
         val bacenPixRequest = BacenPixCreateRequest(
             keyType = chavePixDTO.tipoChave.toTipoChaveBacen(),
             key = chavePixDTO.valorChave,
-            bankAccount = BacenPixCreateRequest.BankAccount(
+            bankAccount = BankAccount(
                 participant = contaResponse.instituicao.ispb,
                 branch = contaResponse.agencia,
                 accountNumber = contaResponse.numero,
                 accounType = contaResponse.tipo.paraBacenPixAccount()
             ),
-            owner = BacenPixCreateRequest.Owner(
-                type = BacenPixCreateRequest.Owner.OwnerType.NATURAL_PERSON,
+            owner = Owner(
+                type = Owner.OwnerType.NATURAL_PERSON,
                 name = contaResponse.titular.nome,
                 taxIdNumber = contaResponse.titular.cpf
             )
@@ -59,12 +57,10 @@ class ChavePixEndpoint(
 
         if (bacenPixResponse.status == HttpStatus.UNPROCESSABLE_ENTITY) throw NotUniqueValueException("Chave ja esta registrada no Banco Central")
 
-        var chavePix: ChavePix
-
-        if (chavePixDTO.tipoChave == TipoChavePix.RANDOM_KEY) {
-            chavePix = chavePixDTO.converte(contaResponse, bacenPixResponse.body().key)
+        var chavePix: ChavePix = if (chavePixDTO.tipoChave == TipoChavePix.RANDOM_KEY) {
+            chavePixDTO.converte(contaResponse, bacenPixResponse.body().key)
         } else {
-            chavePix = chavePixDTO.converte(contaResponse)
+            chavePixDTO.converte(contaResponse)
         }
 
         chavePix = chavePixRepository.save(chavePix)
@@ -98,7 +94,7 @@ class ChavePixEndpoint(
         val bacenDeleteReponse = bacenPixClient.deletaChavePix(chavePix.valorChave, bacenDeleteRequest)
 
         when (bacenDeleteReponse.status) {
-            HttpStatus.NOT_FOUND -> throw NotFoundException()
+            HttpStatus.NOT_FOUND -> throw NotFoundException("Chave pix não encontrada nos registros do Banco Central")
             HttpStatus.FORBIDDEN -> throw ForbiddenException()
         }
 

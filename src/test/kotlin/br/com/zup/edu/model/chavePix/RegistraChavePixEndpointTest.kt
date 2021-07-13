@@ -1,5 +1,6 @@
 package br.com.zup.edu.model.chavePix
 
+import br.com.zup.edu.external.bacenPix.*
 import br.com.zup.edu.proto.ChavePixRequest
 import br.com.zup.edu.proto.KeyManagerServiceGrpc
 import io.grpc.Channel
@@ -7,10 +8,14 @@ import io.grpc.Status
 import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
+import io.micronaut.http.HttpResponse
+import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,6 +25,9 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
     @Inject
     lateinit var chavePixRepository: ChavePixRepository
 
+    @Inject
+    lateinit var bacenPixClientMock: BacenPixClient
+
     @BeforeEach
     internal fun setUp() {
         chavePixRepository.deleteAll()
@@ -27,6 +35,13 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve registrar uma chave de CPF com sucesso`() {
+
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.CPF,
+            valorChave = "06628726061"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
         val request = ChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
@@ -43,6 +58,13 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve registrar uma chave de telefone com sucesso`() {
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.PHONE,
+            valorChave = "+5534998981323"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
+
         val request = ChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
@@ -58,6 +80,14 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve registrar uma chave de email com sucesso`() {
+
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.EMAIL,
+            valorChave = "email@email.com"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
+
         val request = ChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
@@ -73,6 +103,14 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve registrar uma chave aleatoria com sucesso`() {
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.RANDOM_KEY,
+            valorChave = "",
+            valorChaveReponse = "2eb0cb29-25c3-4f1c-92db-babe4c788e28"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
+
         val request = ChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
@@ -87,6 +125,13 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve falhar ao tentar registrar chave aleatoria passando valor na requisicao`() {
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.RANDOM_KEY,
+            valorChave = "2eb0cb29-25c3-4f1c-92db-babe4c788e28"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
+
         val request = ChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
@@ -101,11 +146,17 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve falhar ao tentar registrar uma chave repetida`() {
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.CPF,
+            valorChave = "06628726061"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
         val chavePix = ChavePix(
             idCliente = "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
-            tipoConta = br.com.zup.edu.model.chavePix.TipoConta.CONTA_CORRENTE,
-            tipoChave = br.com.zup.edu.model.chavePix.TipoChavePix.CPF,
+            tipoConta = TipoConta.CONTA_CORRENTE,
+            tipoChave = TipoChavePix.CPF,
             valorChave = "06628726061",
             conta = ChavePix.ContaAssociada(
                 instituicao = "ITAÚ UNIBANCO S.A.",
@@ -133,6 +184,13 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
     @Test
     internal fun `deve retornar status not found ao procurar por id inexistente`() {
+        val (bacenPixCreateRequest, bacenPixCreateResponse) = geraBacenPixCreateRequestEResponse(
+            tipoChavePix = TipoChavePix.RANDOM_KEY,
+            valorChave = "2eb0cb29-25c3-4f1c-92db-babe4c788e28"
+        )
+
+        Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
+
         val request = ChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af92312")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
@@ -153,5 +211,58 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
         }
 
     }
+
+    @MockBean(BacenPixClient::class)
+    fun geraBacenPixClientMock(): BacenPixClient {
+        return Mockito.mock(BacenPixClient::class.java)
+    }
+
+    fun geraBacenPixCreateRequestEResponse(
+        valorChave: String,
+        valorChaveReponse: String? = null,
+        tipoChavePix: TipoChavePix
+    ): BacenPixRegistraRequestEResponse {
+        val bacenPixCreateRequest = BacenPixCreateRequest(
+            keyType = tipoChavePix.toTipoChaveBacen(),
+            key = valorChave,
+            bankAccount = BankAccount(
+                participant = "60701190",
+                branch = "0001",
+                accountNumber = "212233",
+                accounType = TipoConta.CONTA_CORRENTE.paraBacenPixAccount()
+            ),
+            owner = Owner(
+                type = Owner.OwnerType.NATURAL_PERSON,
+                name = "Alberto Tavares",
+                taxIdNumber = "06628726061"
+            )
+        )
+
+        val bacenPixCreateResponse = HttpResponse.ok(
+            BacenPixCreateResponse(
+                keyType = tipoChavePix.toTipoChaveBacen(),
+                key = valorChaveReponse ?: valorChave,
+                bankAccount = BankAccount(
+                    participant = "60701190",
+                    branch = "0001",
+                    accountNumber = "212233",
+                    accounType = TipoConta.CONTA_CORRENTE.paraBacenPixAccount()
+                ),
+                owner = Owner(
+                    type = Owner.OwnerType.NATURAL_PERSON,
+                    name = "Alberto Tavares",
+                    taxIdNumber = "06628726061"
+                ),
+                createdAt = LocalDateTime.now()
+            )
+        )
+
+        return BacenPixRegistraRequestEResponse(bacenPixCreateRequest, bacenPixCreateResponse)
+    }
+
+    data class BacenPixRegistraRequestEResponse(
+        val bacenPixCreateRequest: BacenPixCreateRequest,
+        val bacenPixCreateResponse: HttpResponse<BacenPixCreateResponse>
+    )
 
 }

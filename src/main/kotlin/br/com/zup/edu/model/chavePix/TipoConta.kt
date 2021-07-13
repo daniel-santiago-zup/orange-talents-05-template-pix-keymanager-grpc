@@ -1,18 +1,18 @@
 package br.com.zup.edu.model.chavePix
 
-import br.com.zup.edu.external.bacenPix.BacenPixCreateRequest
+import br.com.zup.edu.external.bacenPix.BankAccount
 
 enum class TipoConta {
     CONTA_CORRENTE {
-        override fun paraBacenPixAccount(): BacenPixCreateRequest.BankAccount.AccountType {
-            return BacenPixCreateRequest.BankAccount.AccountType.CACC
+        override fun paraBacenPixAccount(): BankAccount.AccountType {
+            return BankAccount.AccountType.CACC
         }
     },
     CONTA_POUPANCA {
-        override fun paraBacenPixAccount(): BacenPixCreateRequest.BankAccount.AccountType {
-            return BacenPixCreateRequest.BankAccount.AccountType.SVGS
+        override fun paraBacenPixAccount(): BankAccount.AccountType {
+            return BankAccount.AccountType.SVGS
         }
     };
 
-    abstract fun paraBacenPixAccount(): BacenPixCreateRequest.BankAccount.AccountType
+    abstract fun paraBacenPixAccount(): BankAccount.AccountType
 }
