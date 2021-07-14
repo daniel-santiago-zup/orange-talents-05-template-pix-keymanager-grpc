@@ -8,6 +8,9 @@ import io.micronaut.http.client.annotation.Client
 @Client("bacenPix")
 interface BacenPixClient {
 
+    @Get("/api/v1/pix/keys", produces = [MediaType.APPLICATION_XML])
+    fun listaChavesPix(): HttpResponse<BacenPixListResponse>
+
     @Get("/api/v1/pix/keys/{key}", produces = [MediaType.APPLICATION_XML])
     fun detalhaChavePix(@PathVariable("key") key: String): HttpResponse<BacenPixDetailResponse>
 

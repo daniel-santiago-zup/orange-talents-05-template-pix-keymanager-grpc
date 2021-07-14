@@ -1,8 +1,6 @@
 package br.com.zup.edu.model.chavePix
 
-import br.com.zup.edu.annotations.ValidPixKey
 import br.com.zup.edu.annotations.ValidUUID
-import br.com.zup.edu.external.itauERP.ItauERPContaResponse
 import com.sun.istack.NotNull
 import org.hibernate.validator.constraints.br.CPF
 import java.time.LocalDateTime

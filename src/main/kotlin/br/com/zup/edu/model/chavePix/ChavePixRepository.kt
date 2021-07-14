@@ -6,4 +6,5 @@ import java.util.*
 
 @Repository
 interface ChavePixRepository : JpaRepository<ChavePix, UUID> {
+    fun findAllByIdCliente(idCliente: String): List<ChavePix>
 }

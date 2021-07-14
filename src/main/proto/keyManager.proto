@@ -8,9 +8,10 @@ option objc_class_prefix = "HLW";
 package br.com.zup.edu;
 
 service KeyManagerService {
-  rpc detalhaChaveExternal (DetalhaChavePixExternalRequest) returns (DetalhaChavePixExternalResponse) {};
-  rpc detalhaChaveInternal (DetalhaChaveInternalRequest) returns (DetalhaChaveInternalResponse) {};
-  rpc registraChave (ChavePixRequest) returns (ChavePixResponse) {};
+  rpc detalhaChaveExternal (DetalhaChavePixExternalRequest) returns (DetalhaChavePixExternalResponse);
+  rpc detalhaChaveInternal (DetalhaChaveInternalRequest) returns (DetalhaChaveInternalResponse);
+  rpc listaChaves (ListaChavesRequest) returns (ListaChavesResponse);
+  rpc registraChave (ChavePixRequest) returns (ChavePixResponse);
   rpc deletaChave (DeletaChavePixRequest) returns (DeletaChavePixResponse);
 }
 
@@ -94,4 +95,21 @@ message DetalhaChaveInternalResponse {
     string numero = 3;
     TipoConta tipo = 4;
   }
+}
+
+message ListaChavesRequest {
+  string idCliente = 1;
+}
+
+message ListaChavesResponse {
+  repeated ListaChavesDetails chaves = 1;
+
+  message ListaChavesDetails {
+    string pixId = 1;
+    string idCliente = 2;
+    TipoChavePix tipoChave = 3;
+    string valorChave = 4;
+    TipoConta tipoConta = 5;
+    string criadoEm = 6;
+}
 }
