@@ -1,6 +1,5 @@
 package br.com.zup.edu.external.bacenPix
 
-import br.com.zup.edu.model.chavePix.TipoChavePix
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement

@@ -6,6 +6,7 @@ import br.com.zup.edu.exceptions.NotFoundException
 import br.com.zup.edu.exceptions.NotUniqueValueException
 import br.com.zup.edu.external.bacenPix.*
 import br.com.zup.edu.external.itauERP.ItauERPClient
+import br.com.zup.edu.pix.Instituicoes
 import br.com.zup.edu.proto.*
 import br.com.zup.edu.proto.KeyManagerServiceGrpc.KeyManagerServiceImplBase
 import io.grpc.stub.StreamObserver
@@ -27,7 +28,7 @@ class ChavePixEndpoint(
 ) : KeyManagerServiceImplBase() {
 
     @Transactional
-    override fun registraChave(request: ChavePixRequest, responseObserver: StreamObserver<ChavePixResponse>) {
+    override fun registraChave(request: CriaChavePixRequest, responseObserver: StreamObserver<CriaChavePixResponse>) {
 
         val chavePixDTO = request.converte(validator)
 
@@ -63,7 +64,7 @@ class ChavePixEndpoint(
         chavePix = chavePixRepository.save(chavePix)
 
         responseObserver.onNext(
-            ChavePixResponse.newBuilder()
+            CriaChavePixResponse.newBuilder()
                 .setPixId(chavePix.id.toString())
                 .build()
         )
@@ -90,10 +91,8 @@ class ChavePixEndpoint(
 
         val bacenDeleteReponse = bacenPixClient.deletaChavePix(chavePix.valorChave, bacenDeleteRequest)
 
-        when (bacenDeleteReponse.status) {
-            HttpStatus.NOT_FOUND -> throw NotFoundException("Chave pix não encontrada nos registros do Banco Central")
-            HttpStatus.FORBIDDEN -> throw ForbiddenException()
-        }
+        if (bacenDeleteReponse.status == HttpStatus.NOT_FOUND) throw NotFoundException("Chave pix não encontrada nos registros do Banco Central")
+        else if (bacenDeleteReponse.status == HttpStatus.FORBIDDEN) throw ForbiddenException()
 
         chavePixRepository.deleteById(pixUuid)
 
@@ -171,7 +170,7 @@ class ChavePixEndpoint(
                 )
                 .setConta(
                     DetalhaChaveInternalResponse.Conta.newBuilder()
-                        .setInstituicao(chavePix.bankAccount.participant)
+                        .setInstituicao(Instituicoes.nome(chavePix.bankAccount.participant))
                         .setAgencia(chavePix.bankAccount.branch)
                         .setNumero(chavePix.bankAccount.accountNumber)
                         .setTipo(chavePix.bankAccount.accounType.toTipoContaProtobuff())
@@ -209,7 +208,7 @@ class ChavePixEndpoint(
 
 }
 
-fun ChavePixRequest.converte(validador: Validator): ChavePixCreateDTO {
+fun CriaChavePixRequest.converte(validador: Validator): ChavePixCreateDTO {
     val chavePix = ChavePixCreateDTO(
         idCliente = idCliente,
         tipoChave = TipoChavePix.valueOf(tipoChave.name),

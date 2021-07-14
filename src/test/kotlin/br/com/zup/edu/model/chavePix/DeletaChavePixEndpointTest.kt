@@ -11,6 +11,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -73,12 +74,38 @@ internal class DeletaChavePixEndpointTest(
     }
 
     @Test
-    internal fun `deve falhar ao tentar deletar chave pix que não existe`() {
+    internal fun `deve falhar ao tentar deletar chave pix que nao existe`() {
+        val (bacenPixDeleteRequest, bacenPixDeleteResponse) = geraBacenPixDeleteRequestEResponse(
+            valorChave = "0d1bb194-3c52-4e67-8c35-a93c0af9284f"
+        )
+
+        Mockito.`when`(bacenPixClientMock.deletaChavePix("0d1bb194-3c52-4e67-8c35-a93c0af9284f", bacenPixDeleteRequest))
+            .thenReturn(HttpResponse.notFound())
+
         val request = DeletaChavePixRequest.newBuilder()
             .setPixId("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .build()
 
         assertThrows(Status.NOT_FOUND.asRuntimeException()::class.java) {
+            keyManagerClient.deletaChave(request)
+        }
+    }
+
+    @Test
+    internal fun `deve falhar ao tentar deletar chave pix que nao pertence ao banco`() {
+        val (bacenPixDeleteRequest, bacenPixDeleteResponse) = geraBacenPixDeleteRequestEResponse(
+            valorChave = "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
+            participant = "000000000"
+        )
+
+        Mockito.`when`(bacenPixClientMock.deletaChavePix("0d1bb194-3c52-4e67-8c35-a93c0af9284f", bacenPixDeleteRequest))
+            .thenReturn(HttpResponse.status(HttpStatus.FORBIDDEN))
+
+        val request = DeletaChavePixRequest.newBuilder()
+            .setPixId("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
+            .build()
+
+        assertThrows(Status.PERMISSION_DENIED.asRuntimeException()::class.java) {
             keyManagerClient.deletaChave(request)
         }
     }
@@ -101,24 +128,25 @@ internal class DeletaChavePixEndpointTest(
     fun geraBacenPixDeleteRequestEResponse(
         valorChave: String,
         valorChaveReponse: String? = null,
-    ): BacenPixRegistraRequestEResponse {
+        participant: String? = null
+    ): BacenPixDeleteRequestEResponse {
         val bacenPixDeleteRequestRequest = BacenPixDeleteRequest(
             key = valorChave,
-            participant = "60701190",
+            participant = participant ?: "60701190",
         )
 
         val bacenPixDeleteResponse = HttpResponse.ok(
             BacenPixDeleteResponse(
                 key = valorChaveReponse ?: valorChave,
-                participant = "60701190",
+                participant = participant ?: "60701190",
                 deletedAt = LocalDateTime.now()
             )
         )
 
-        return BacenPixRegistraRequestEResponse(bacenPixDeleteRequestRequest, bacenPixDeleteResponse)
+        return BacenPixDeleteRequestEResponse(bacenPixDeleteRequestRequest, bacenPixDeleteResponse)
     }
 
-    data class BacenPixRegistraRequestEResponse(
+    data class BacenPixDeleteRequestEResponse(
         val bacenPixDeleteRequestRequest: BacenPixDeleteRequest,
         val bacenPixDeleteResponse: HttpResponse<BacenPixDeleteResponse>
     )

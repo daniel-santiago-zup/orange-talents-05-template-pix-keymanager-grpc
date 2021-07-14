@@ -1,7 +1,7 @@
 package br.com.zup.edu.model.chavePix
 
 import br.com.zup.edu.external.bacenPix.*
-import br.com.zup.edu.proto.ChavePixRequest
+import br.com.zup.edu.proto.CriaChavePixRequest
 import br.com.zup.edu.proto.KeyManagerServiceGrpc
 import io.grpc.Channel
 import io.grpc.Status
@@ -43,7 +43,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.CPF)
@@ -65,7 +65,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.PHONE)
@@ -88,7 +88,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.EMAIL)
@@ -111,7 +111,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.RANDOM_KEY)
@@ -132,7 +132,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.RANDOM_KEY)
@@ -170,7 +170,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         chavePixRepository.save(chavePix)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af9284f")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.CPF)
@@ -191,7 +191,7 @@ internal class RegistraChavePixEndpointTest(@Inject val keyManagerClient: KeyMan
 
         Mockito.`when`(bacenPixClientMock.registraChavePix(bacenPixCreateRequest)).thenReturn(bacenPixCreateResponse)
 
-        val request = ChavePixRequest.newBuilder()
+        val request = CriaChavePixRequest.newBuilder()
             .setIdCliente("0d1bb194-3c52-4e67-8c35-a93c0af92312")
             .setTipoConta(br.com.zup.edu.proto.TipoConta.CONTA_CORRENTE)
             .setTipoChave(br.com.zup.edu.proto.TipoChavePix.RANDOM_KEY)

@@ -11,7 +11,7 @@ service KeyManagerService {
   rpc detalhaChaveExternal (DetalhaChavePixExternalRequest) returns (DetalhaChavePixExternalResponse);
   rpc detalhaChaveInternal (DetalhaChaveInternalRequest) returns (DetalhaChaveInternalResponse);
   rpc listaChaves (ListaChavesRequest) returns (ListaChavesResponse);
-  rpc registraChave (ChavePixRequest) returns (ChavePixResponse);
+  rpc registraChave (CriaChavePixRequest) returns (CriaChavePixResponse);
   rpc deletaChave (DeletaChavePixRequest) returns (DeletaChavePixResponse);
 }
 
@@ -29,14 +29,14 @@ enum TipoConta {
   CONTA_POUPANCA = 2;
 }
 
-message ChavePixRequest {
+message CriaChavePixRequest {
   string idCliente = 1;
   TipoChavePix tipoChave = 2;
   string valorChave = 3;
   TipoConta tipoConta = 4;
 }
 
-message ChavePixResponse {
+message CriaChavePixResponse {
   string pixId = 1;
 }
 
