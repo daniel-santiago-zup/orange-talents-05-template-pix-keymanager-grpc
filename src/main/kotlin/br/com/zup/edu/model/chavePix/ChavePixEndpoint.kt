@@ -11,10 +11,10 @@ import br.com.zup.edu.proto.*
 import br.com.zup.edu.proto.KeyManagerServiceGrpc.KeyManagerServiceImplBase
 import io.grpc.stub.StreamObserver
 import io.micronaut.http.HttpStatus
+import io.micronaut.transaction.SynchronousTransactionManager
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.transaction.Transactional
 import javax.validation.ConstraintViolationException
 import javax.validation.Validator
 
@@ -27,7 +27,6 @@ class ChavePixEndpoint(
     @Inject val validator: Validator
 ) : KeyManagerServiceImplBase() {
 
-    @Transactional
     override fun registraChave(request: CriaChavePixRequest, responseObserver: StreamObserver<CriaChavePixResponse>) {
 
         val chavePixDTO = request.converte(validator)
@@ -190,18 +189,20 @@ class ChavePixEndpoint(
             throw NotFoundException("Não foi possível encontrar chaves para esse cliente")
         }
 
-        responseObserver.onNext(ListaChavesResponse.newBuilder()
-            .addAllChaves(chavesPix.map {
-                ListaChavesResponse.ListaChavesDetails.newBuilder()
-                    .setPixId(it.id.toString())
-                    .setIdCliente(it.idCliente)
-                    .setTipoChave(it.tipoChave.toTipoChavePixProtobuff())
-                    .setValorChave(it.valorChave)
-                    .setTipoConta(it.tipoConta.toTipoContaProtobuff())
-                    .setCriadoEm(it.criadaEm.toString())
-                    .build()
-            })
-            .build())
+        responseObserver.onNext(
+            ListaChavesResponse.newBuilder()
+                .addAllChaves(chavesPix.map {
+                    ListaChavesResponse.ListaChavesDetails.newBuilder()
+                        .setPixId(it.id.toString())
+                        .setIdCliente(it.idCliente)
+                        .setTipoChave(it.tipoChave.toTipoChavePixProtobuff())
+                        .setValorChave(it.valorChave)
+                        .setTipoConta(it.tipoConta.toTipoContaProtobuff())
+                        .setCriadoEm(it.criadaEm.toString())
+                        .build()
+                })
+                .build()
+        )
 
         responseObserver.onCompleted()
     }

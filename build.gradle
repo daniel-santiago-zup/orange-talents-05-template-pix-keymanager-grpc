@@ -25,8 +25,6 @@ micronaut {
 
 dependencies {
     kapt("io.micronaut.data:micronaut-data-processor")
-    annotationProcessor("io.micronaut:micronaut-inject-java:2.5.8")
-    runtime("io.micronaut:micronaut-core:2.5.8")
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
@@ -45,6 +43,9 @@ dependencies {
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("org.mockito:mockito-core:3.7.7")
 
+    runtime("io.micronaut:micronaut-core:2.5.8")
+    annotationProcessor("io.micronaut:micronaut-inject-java:2.5.8")
+    implementation("org.hibernate:hibernate-core")
     implementation("org.hibernate.validator:hibernate-validator:7.0.0.Final")
 
     implementation("io.micronaut.xml:micronaut-jackson-xml")

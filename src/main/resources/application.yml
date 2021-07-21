@@ -8,17 +8,17 @@ micronaut:
       itauERP:
         logger-name: itauERP
         urls:
-          - http://localhost:9091
+          - 'http://${ITAU_ERP_HOSTNAME:localhost}:${ITAU_ERP_PORT:9091}'
       bacenPix:
         logger-name: bacenPix
         urls:
-          - http://localhost:8082
+          - 'http://${BACEN_HOSTNAME:localhost}:${BACEN_PORT:8082}'
+
 datasources:
   default:
-    url: jdbc:postgresql://localhost:5432/keyManagerPix
+    url: 'jdbc:postgresql://${DB_HOSTNAME:localhost}:${DB_PORT:5432}/${DB_NAME:keyManagerPix}'
     driverClassName: org.postgresql.Driver
-    username: postgres
-    password: '123456'
+    username: '${DB_USERNAME:postgres}'
+    password: '${DB_PASSWORD:123456}'
     dialect: POSTGRES
-    schema-generate: CREATE_DROP
 jpa.default.properties.hibernate.hbm2ddl.auto: update

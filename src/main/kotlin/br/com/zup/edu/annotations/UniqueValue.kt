@@ -7,6 +7,7 @@ import io.micronaut.validation.validator.constraints.ConstraintValidatorContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.persistence.EntityManager
+import javax.transaction.Transactional
 import javax.validation.Constraint
 import kotlin.reflect.KClass
 
@@ -21,8 +22,9 @@ annotation class UniqueValue(
 )
 
 @Singleton
-class UniqueValueValidator(@Inject val entityManager: EntityManager): ConstraintValidator<UniqueValue, Any?> {
+open class UniqueValueValidator(@Inject val entityManager: EntityManager): ConstraintValidator<UniqueValue, Any?> {
 
+    @Transactional
     override fun isValid(
         value: Any?,
         annotationMetadata: AnnotationValue<UniqueValue>?,
