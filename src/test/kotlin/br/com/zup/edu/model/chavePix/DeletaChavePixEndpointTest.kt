@@ -3,6 +3,8 @@ package br.com.zup.edu.model.chavePix
 import br.com.zup.edu.external.bacenPix.BacenPixClient
 import br.com.zup.edu.external.bacenPix.BacenPixDeleteRequest
 import br.com.zup.edu.external.bacenPix.BacenPixDeleteResponse
+import br.com.zup.edu.external.itauERP.ItauERPClient
+import br.com.zup.edu.external.itauERP.ItauERPContaResponse
 import br.com.zup.edu.proto.DeletaChavePixRequest
 import br.com.zup.edu.proto.KeyManagerServiceGrpc
 import io.grpc.Channel
@@ -75,7 +77,7 @@ internal class DeletaChavePixEndpointTest(
 
     @Test
     internal fun `deve falhar ao tentar deletar chave pix que nao existe`() {
-        val (bacenPixDeleteRequest, bacenPixDeleteResponse) = geraBacenPixDeleteRequestEResponse(
+        val (bacenPixDeleteRequest, _) = geraBacenPixDeleteRequestEResponse(
             valorChave = "0d1bb194-3c52-4e67-8c35-a93c0af9284f"
         )
 
@@ -93,7 +95,8 @@ internal class DeletaChavePixEndpointTest(
 
     @Test
     internal fun `deve falhar ao tentar deletar chave pix que nao pertence ao banco`() {
-        val (bacenPixDeleteRequest, bacenPixDeleteResponse) = geraBacenPixDeleteRequestEResponse(
+        // O participant fornecido é diferente do que representa o banco itaú
+        val (bacenPixDeleteRequest, _) = geraBacenPixDeleteRequestEResponse(
             valorChave = "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
             participant = "000000000"
         )
@@ -110,9 +113,13 @@ internal class DeletaChavePixEndpointTest(
         }
     }
 
+    // ---------------------------------- Secção de Setup para testes ----------------------------------------
+
+    /**
+     * Cria um cliente grpc para se comunicar com o servidor grpc levantado pela nossa aplicação
+     */
     @Factory
     class GrpcClientFactory {
-
         @Singleton
         fun geraClienteGrpc(@GrpcChannel(GrpcServerChannel.NAME) grpcChannel: Channel): KeyManagerServiceGrpc.KeyManagerServiceBlockingStub {
             return KeyManagerServiceGrpc.newBlockingStub(grpcChannel)
@@ -120,6 +127,9 @@ internal class DeletaChavePixEndpointTest(
 
     }
 
+    /**
+     * Cria mock do cliente http que se comunica com o sistema do Banco Central
+     */
     @MockBean(BacenPixClient::class)
     fun geraBacenPixClientMock(): BacenPixClient {
         return Mockito.mock(BacenPixClient::class.java)
@@ -129,7 +139,7 @@ internal class DeletaChavePixEndpointTest(
         valorChave: String,
         valorChaveReponse: String? = null,
         participant: String? = null
-    ): BacenPixDeleteRequestEResponse {
+    ): Pair<BacenPixDeleteRequest, HttpResponse<BacenPixDeleteResponse>> {
         val bacenPixDeleteRequestRequest = BacenPixDeleteRequest(
             key = valorChave,
             participant = participant ?: "60701190",
@@ -143,11 +153,7 @@ internal class DeletaChavePixEndpointTest(
             )
         )
 
-        return BacenPixDeleteRequestEResponse(bacenPixDeleteRequestRequest, bacenPixDeleteResponse)
+        return Pair(bacenPixDeleteRequestRequest, bacenPixDeleteResponse)
     }
 
-    data class BacenPixDeleteRequestEResponse(
-        val bacenPixDeleteRequestRequest: BacenPixDeleteRequest,
-        val bacenPixDeleteResponse: HttpResponse<BacenPixDeleteResponse>
-    )
 }

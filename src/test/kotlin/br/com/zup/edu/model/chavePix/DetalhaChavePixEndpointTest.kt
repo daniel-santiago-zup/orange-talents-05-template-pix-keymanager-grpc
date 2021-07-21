@@ -172,12 +172,18 @@ internal class DetalhaChavePixEndpointTest(
         assertEquals("Chave pix fornecida não encontrada no Banco Central", erro.status.description)
     }
 
+    // ---------------------------------- Secção de Setup para testes ----------------------------------------
+
+    /**
+     * Cria um cliente grpc para se comunicar com o servidor grpc levantado pela nossa aplicação
+     */
     @Factory
     class GrpcClientFactory {
         @Singleton
         fun geraClienteGrpc(@GrpcChannel(GrpcServerChannel.NAME) grpcChannel: Channel): KeyManagerServiceGrpc.KeyManagerServiceBlockingStub {
             return KeyManagerServiceGrpc.newBlockingStub(grpcChannel)
         }
+
     }
 
     @MockBean(BacenPixClient::class)

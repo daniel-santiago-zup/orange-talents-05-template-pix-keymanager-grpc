@@ -1,6 +1,8 @@
 package br.com.zup.edu.model.chavePix
 
 import br.com.zup.edu.external.bacenPix.*
+import br.com.zup.edu.external.itauERP.ItauERPClient
+import br.com.zup.edu.external.itauERP.ItauERPContaResponse
 import br.com.zup.edu.proto.DetalhaChaveInternalRequest
 import br.com.zup.edu.proto.DetalhaChavePixExternalRequest
 import br.com.zup.edu.proto.KeyManagerServiceGrpc
@@ -26,7 +28,6 @@ import javax.inject.Singleton
 @MicronautTest(transactional = false)
 internal class ListaChavesPixEndpointTest(
     @Inject val chavePixRepository: ChavePixRepository,
-    @Inject val bacenPixClient: BacenPixClient,
     @Inject val keyManagerClient: KeyManagerServiceGrpc.KeyManagerServiceBlockingStub
 ) {
 
@@ -70,43 +71,11 @@ internal class ListaChavesPixEndpointTest(
         assertEquals("Não foi possível encontrar chaves para esse cliente", error.status.description)
     }
 
-    @Factory
-    class GrpcClientFactory {
-        @Singleton
-        fun geraClienteGrpc(@GrpcChannel(GrpcServerChannel.NAME) grpcChannel: Channel): KeyManagerServiceGrpc.KeyManagerServiceBlockingStub {
-            return KeyManagerServiceGrpc.newBlockingStub(grpcChannel)
-        }
-    }
+    // ---------------------------------- Secção de Setup para testes ----------------------------------------
 
-    @MockBean(BacenPixClient::class)
-    fun geraBacenPixClientMock(): BacenPixClient {
-        return Mockito.mock(BacenPixClient::class.java)
-    }
-
-    fun geraBacenPixDetailResponse(
-        tipoChaveBacen: TipoChaveBacen,
-        valorChave: String
-    ): HttpResponse<BacenPixDetailResponse> {
-        return HttpResponse.ok(
-            BacenPixDetailResponse(
-                keyType = tipoChaveBacen,
-                key = valorChave,
-                bankAccount = BankAccount(
-                    participant = "60701190",
-                    branch = "0001",
-                    accountNumber = "212233",
-                    accounType = TipoConta.CONTA_CORRENTE.paraBacenPixAccount()
-                ),
-                owner = Owner(
-                    type = Owner.OwnerType.NATURAL_PERSON,
-                    name = "Alberto Tavares",
-                    taxIdNumber = "06628726061"
-                ),
-                createdAt = LocalDateTime.now()
-            )
-        )
-    }
-
+    /**
+     * Essa função gera uma chave pix do tipo aleatória com um valor aleatório a cada chamada
+     */
     fun geraChavePixComRandomKey(): ChavePix {
         return ChavePix(
             idCliente = "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
