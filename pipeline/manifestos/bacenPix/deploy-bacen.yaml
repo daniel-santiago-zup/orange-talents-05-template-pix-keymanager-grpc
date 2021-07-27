@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-bacen
+spec:
+  selector:
+    matchLabels:
+      app: deploy-bacen
+  template:
+    metadata:
+      labels:
+        app: deploy-bacen
+    spec:
+      containers:
+      - name: deploy-bacen
+        image: public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix
+        ports:
+        - containerPort: 8082

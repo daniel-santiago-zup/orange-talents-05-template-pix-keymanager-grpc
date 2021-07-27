@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-pix-key-manager-grpc
+spec:
+  selector:
+    matchLabels:
+      app: deploy-pix-key-manager-grpc
+  template:
+    metadata:
+      labels:
+        app: deploy-pix-key-manager-grpc
+    spec:
+      containers:
+      - name: deploy-pix-key-manager-grpc
+        image: 208471844409.dkr.ecr.sa-east-1.amazonaws.com/key-manager-grpc:latest
+        ports:
+        - containerPort: 50051
+        envFrom:
+          - configMapRef:
+              name: pix-key-manager-grpc-configmap
+          - secretRef:
+              name: pix-key-manager-grpc-secrets
+  replicas: 3

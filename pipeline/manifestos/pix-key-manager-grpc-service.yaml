@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-pix-key-manager-grpc
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: deploy-pix-key-manager-grpc
+  ports:
+  - port: 50051
+    targetPort: 50051

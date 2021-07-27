@@ -1,0 +1,27 @@
+  version: 0.2
+
+  phases:
+    install:
+      runtime-versions:
+        java: corretto11
+
+    pre_build:
+      commands:
+        - echo logando no registro de containers da AWS
+        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin public.ecr.aws/i2c7a5l2
+        - chmod 777 ./gradlew
+
+    build:
+      commands:
+        - echo Compilacao iniciada em `date`
+        - ./gradlew clean build
+        - ./gradlew dockerfile
+        - echo Iniciando build da imagem do container...
+        - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG ./build/docker/
+        - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$IMAGE_TAG
+
+
+    post_build:
+      commands:
+        - echo Enviando imagem para registro de containers...
+        - docker push public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$IMAGE_TAG
