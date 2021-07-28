@@ -4,12 +4,20 @@
     install:
       runtime-versions:
         java: corretto11
+      commands:
+        - curl -o /bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
+        - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
+        - chmod +x /bin/kubectl ./aws-iam-authenticator
+        - chmod 777 ./gradlew
+        - export PATH=$PWD/:$PATH
+        - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
 
     pre_build:
       commands:
         - echo logando no registro de containers da AWS
         - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin public.ecr.aws/i2c7a5l2
-        - chmod 777 ./gradlew
+        - export KUBECONFIG=$HOME/.kube/config
+        - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $ARN_ROLE
 
     build:
       commands:
@@ -19,9 +27,15 @@
         - echo Iniciando build da imagem do container...
         - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG ./build/docker/
         - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$IMAGE_TAG
+        - docker tag $IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
 
 
     post_build:
       commands:
         - echo Enviando imagem para registro de containers...
         - docker push public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$IMAGE_TAG
+        - docker push public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
+        - echo Aplicando manifestos
+        - kubectl apply -f ./bacenPix/deploy-bacen.yaml -f ./bacenPix/service-bacen.yaml -f ./itauERP/deploy-itau-erp.yaml - f ./itauERP/service-itau-erp.yaml -f ./postgres/pod-postgres.yaml -f ./postgres/service-postgres.yaml -f ./pix-key-manager-grpc-configmap.yaml -f ./pix-key-manager-grpc-secrets.yaml -f ./pix-key-manager-grpc-deploy.yaml -f ./pix-key-manager-grpc-service.yaml
+        - echo Mudando imagem do deploy
+        - kubectl set image deployments/$DEPLOYMENT_NAME $DEPLOYMENT_NAME=public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
