@@ -20,7 +20,6 @@
 
     build:
       commands:
-        - kubectl get pods
         - echo Compilacao iniciada em `date`
         - ./gradlew clean build
         - ./gradlew dockerfile
