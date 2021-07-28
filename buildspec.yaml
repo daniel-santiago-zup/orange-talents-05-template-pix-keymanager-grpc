@@ -14,8 +14,6 @@
 
     pre_build:
       commands:
-        - echo logando no registro de containers da AWS
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin public.ecr.aws/i2c7a5l2
         - export KUBECONFIG=$HOME/.kube/config
         - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $ARN_ROLE
 
