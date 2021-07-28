@@ -35,6 +35,7 @@
         - docker push public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$IMAGE_TAG
         - docker push public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
         - echo Aplicando manifestos
+        - ls
         - kubectl apply -f ./pipeline/manifestos/bacenPix/deploy-bacen.yaml -f ./pipeline/manifestos/bacenPix/service-bacen.yaml -f ./pipeline/manifestos/itauERP/deploy-itau-erp.yaml -f ./pipeline/manifestos/itauERP/service-itau-erp.yaml -f ./pipeline/manifestos/postgres/pod-postgres.yaml -f ./pipeline/manifestos/postgres/service-postgres.yaml -f ./pipeline/manifestos/pix-key-manager-grpc-configmap.yaml -f ./pipeline/manifestos/pix-key-manager-grpc-secrets.yaml -f ./pipeline/manifestos/pix-key-manager-grpc-deploy.yaml -f ./pipeline/manifestos/pix-key-manager-grpc-service.yaml
         - echo Mudando imagem do deploy
         - kubectl set image deployments/$DEPLOYMENT_NAME $DEPLOYMENT_NAME=public.ecr.aws/i2c7a5l2/$IMAGE_REPO_NAME:$CODEBUILD_BUILD_NUMBER
